@@ -42,7 +42,7 @@ export const Footer: React.FC<FooterProps> = ({ tokenCount, totalCostUSD, userIp
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-y-4 sm:gap-x-6">
                 
                 <div className="flex flex-col sm:flex-row items-center gap-y-2 sm:gap-x-4">
-                    <span className="font-bold text-red-700">Versión 2025.v10E</span>
+                    <span className="font-bold text-red-700">Versión 2025.v10G</span>
                     {userIp && (
                         <div className="flex items-baseline gap-1.5">
                             <span>IP:</span>
