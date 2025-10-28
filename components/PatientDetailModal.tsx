@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Patient } from '../types';
-import { XIcon, BotIcon, PatientIcon, DoctorIcon, EditIcon, PhoneIcon, EmailIcon, WhatsAppIcon, CalendarIcon } from './Icons';
+import { XIcon, BotIcon, PatientIcon, DoctorIcon, EditIcon, PhoneIcon, EmailIcon, WhatsAppIcon, CalendarIcon, BellIcon } from './Icons';
 import { useAppContext } from '../AppContext';
 import { parseTextToHTML, formatDateToSpanish } from '../utils';
 import { Avatar } from './Avatar';
@@ -11,6 +11,95 @@ interface PatientDetailModalProps {
     onClose: () => void;
     onOpenEditModal: (patient: Patient) => void;
 }
+
+const ReminderSection: React.FC<{ patient: Patient }> = ({ patient }) => {
+    const { scheduleReminder, cancelReminder } = useAppContext();
+    const [reminderDate, setReminderDate] = useState('');
+    const [reminderMessage, setReminderMessage] = useState('Por favor, envíe una nueva foto de su herida.');
+    const [isFormVisible, setIsFormVisible] = useState(false);
+
+    useEffect(() => {
+        if (!patient.reminder) {
+             setIsFormVisible(false);
+             setReminderMessage('Por favor, envíe una nueva foto de su herida.');
+             setReminderDate('');
+        }
+    }, [patient.reminder]);
+
+    const handleSchedule = () => {
+        if (patient && reminderDate) {
+            scheduleReminder(patient.id, new Date(reminderDate).toISOString(), reminderMessage);
+            setIsFormVisible(false);
+        }
+    };
+
+    const handleCancel = () => {
+        if (patient) {
+            cancelReminder(patient.id);
+        }
+    };
+
+    const minDateTime = new Date(Date.now() + 60000).toISOString().slice(0, 16);
+
+    return (
+        <div className="mt-6 border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-left flex items-center gap-2">
+                <BellIcon /> Recordatorio de Seguimiento
+            </h3>
+            {patient.reminder ? (
+                <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200 text-sm">
+                    <p className="font-semibold text-indigo-800">Hay un recordatorio programado para:</p>
+                    <p className="text-indigo-700 font-mono my-1">{new Date(patient.reminder.datetime).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                    <p className="text-indigo-700 mt-2"><strong>Mensaje:</strong> "{patient.reminder.message}"</p>
+                    <button onClick={handleCancel} className="mt-3 text-sm font-semibold text-red-600 hover:text-red-800">
+                        Cancelar Recordatorio
+                    </button>
+                </div>
+            ) : (
+                <div>
+                    {!isFormVisible ? (
+                         <button onClick={() => setIsFormVisible(true)} className="w-full text-left bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold">
+                            + Programar nuevo recordatorio
+                        </button>
+                    ) : (
+                        <div className="space-y-3 text-sm">
+                             <div>
+                                <label htmlFor="reminder-date" className="font-medium text-gray-600">Fecha y Hora</label>
+                                <input
+                                    id="reminder-date"
+                                    type="datetime-local"
+                                    value={reminderDate}
+                                    onChange={(e) => setReminderDate(e.target.value)}
+                                    min={minDateTime}
+                                    className="mt-1 w-full p-2 border rounded-md"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="reminder-message" className="font-medium text-gray-600">Mensaje del Recordatorio</label>
+                                <textarea
+                                    id="reminder-message"
+                                    value={reminderMessage}
+                                    onChange={(e) => setReminderMessage(e.target.value)}
+                                    rows={2}
+                                    className="mt-1 w-full p-2 border rounded-md"
+                                ></textarea>
+                            </div>
+                            <div className="flex space-x-2 justify-end">
+                                <button onClick={() => setIsFormVisible(false)} className="bg-gray-200 text-gray-700 py-1 px-3 rounded-md hover:bg-gray-300">
+                                    Cancelar
+                                </button>
+                                <button onClick={handleSchedule} disabled={!reminderDate} className="bg-indigo-600 text-white py-1 px-3 rounded-md hover:bg-indigo-700 disabled:bg-indigo-300">
+                                    Programar
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 export const PatientDetailModal: React.FC<PatientDetailModalProps> = ({ patient, onClose, onOpenEditModal }) => {
     const { messages } = useAppContext();
@@ -74,6 +163,8 @@ export const PatientDetailModal: React.FC<PatientDetailModalProps> = ({ patient,
                             {patient.details.email && (<li className="flex justify-between items-center"><span className="font-medium text-gray-500 flex items-center gap-2"><EmailIcon/>Email:</span><a href={`mailto:${patient.details.email}`} className="text-indigo-600 font-semibold hover:underline truncate">{patient.details.email}</a></li>)}
                         </ul>
                     </div>
+
+                    <ReminderSection patient={patient} />
 
                     {/* Visit History */}
                     <div className="mt-6 border-t border-gray-200 pt-6">

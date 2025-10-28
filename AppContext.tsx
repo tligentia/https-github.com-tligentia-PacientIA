@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useContext, useEffect, useCallback, ReactNode, useRef } from 'react';
-import type { Patient, Message, UserType, LiveSessionStatus, AppContextType, LiveTranscription } from './types';
+import type { Patient, Message, UserType, LiveSessionStatus, AppContextType, LiveTranscription, Reminder } from './types';
 import { mockPatients, mockMessages } from './data';
 import { analyzePatientData, classifyAndRespondToTextMessage, getDoctorSuggestion } from './services/geminiService';
 import { fileToBase64, encode, decode, decodeAudioData } from './utils';
@@ -202,6 +202,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
     };
 
+    const scheduleReminder = useCallback((patientId: string, datetime: string, message: string) => {
+        setPatients(prev =>
+            prev.map(p =>
+                p.id === patientId ? { ...p, reminder: { datetime, message } } : p
+            )
+        );
+    }, []);
+
+    const cancelReminder = useCallback((patientId: string) => {
+        setPatients(prev =>
+            prev.map(p => {
+                if (p.id === patientId) {
+                    const patientCopy = { ...p };
+                    delete patientCopy.reminder;
+                    return patientCopy;
+                }
+                return p;
+            })
+        );
+    }, []);
+
     const stopLiveConversation = useCallback(() => {
         console.log('Stopping live conversation...');
         sessionPromiseRef.current?.then(session => session.close());
@@ -388,6 +409,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         toggleLiveConversation,
         isAiSpeaking,
         liveTranscription,
+        scheduleReminder,
+        cancelReminder,
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

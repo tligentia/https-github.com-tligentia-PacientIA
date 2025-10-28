@@ -15,7 +15,7 @@ import { Avatar } from './components/Avatar';
 import { LockScreen } from './components/LockScreen';
 
 const App: React.FC = () => {
-    const { selectedPatient, messages } = useAppContext();
+    const { selectedPatient, messages, patients, selectPatient } = useAppContext();
     
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [detailPatient, setDetailPatient] = useState<Patient | null>(null);
@@ -89,6 +89,48 @@ const App: React.FC = () => {
         };
         fetchIp();
     }, []);
+
+    // Effect for handling notifications
+    useEffect(() => {
+        if (!isAuthenticated) return;
+
+        if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+            Notification.requestPermission();
+        }
+    
+        const checkReminders = () => {
+            const now = new Date();
+            patients.forEach(patient => {
+                if (patient.reminder) {
+                    const reminderTime = new Date(patient.reminder.datetime);
+                    const notificationKey = `notified-${patient.id}-${patient.reminder.datetime}`;
+    
+                    if (reminderTime <= now && !sessionStorage.getItem(notificationKey)) {
+                        console.log(`Firing reminder for ${patient.name}`);
+                        if (Notification.permission === 'granted') {
+                            const notification = new Notification('Recordatorio de PacientIA', {
+                                body: `Seguimiento para ${patient.name}: ${patient.reminder.message}`,
+                                icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22><rect width=%2220%22 height=%2220%22 rx=%224%22 fill=%22%234f46e5%22 /><path fill=%22%23ffffff%22 d=%22M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z%22 /></svg>"
+                            });
+                            notification.onclick = () => {
+                                window.focus();
+                                selectPatient(patient.id);
+                            };
+                        } else {
+                            // Fallback for browsers/permissions
+                            alert(`Recordatorio para ${patient.name}: ${patient.reminder.message}`);
+                        }
+                        sessionStorage.setItem(notificationKey, 'true');
+                    }
+                }
+            });
+        };
+    
+        const intervalId = setInterval(checkReminders, 30000); // Check every 30 seconds
+    
+        return () => clearInterval(intervalId);
+    }, [isAuthenticated, patients, selectPatient]);
+
 
     const tokenCount = useMemo(() => {
         return Object.values(messages)

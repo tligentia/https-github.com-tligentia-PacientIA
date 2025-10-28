@@ -1,5 +1,5 @@
 {
-  "name": "PacientIA",
+  "name": "PacientIA ✅",
   "description": "Una aplicación para que los médicos realicen un seguimiento de la evolución de las heridas de los pacientes utilizando descripciones e imágenes, con análisis asistido por IA de Gemini.",
   "requestFramePermissions": [
     "microphone"

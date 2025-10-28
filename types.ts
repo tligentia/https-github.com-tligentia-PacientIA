@@ -6,12 +6,18 @@ export interface Visit {
     summary: string;
 }
 
+export interface Reminder {
+    datetime: string;
+    message: string;
+}
+
 export interface Patient {
     id: string;
     name: string;
     avatarUrl?: string;
     lastMessage: string;
     lastMessageTimestamp: string;
+    reminder?: Reminder;
     details: {
         age: number;
         condition: string;
@@ -55,4 +61,6 @@ export interface AppContextType {
     toggleLiveConversation: () => void;
     isAiSpeaking: boolean;
     liveTranscription: LiveTranscription | null;
+    scheduleReminder: (patientId: string, datetime: string, message: string) => void;
+    cancelReminder: (patientId: string) => void;
 }

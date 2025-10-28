@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import type { Patient } from '../types';
-import { XIcon, InfoIcon, AddUserIcon, TrashIcon, SearchIcon, BotIcon } from './Icons';
+import { XIcon, InfoIcon, AddUserIcon, TrashIcon, SearchIcon, BotIcon, BellIcon } from './Icons';
 import { useAppContext } from '../AppContext';
 import { formatDateToSpanish } from '../utils';
 import { Avatar } from './Avatar';
@@ -32,6 +32,11 @@ const PatientCard: React.FC<{
             <div className="flex justify-between items-center">
                 <h3 className={`font-semibold truncate ${isSelected ? 'text-indigo-800' : 'text-gray-900'}`}>{patient.name}</h3>
                 <div className="flex items-center space-x-2">
+                     {patient.reminder && (
+                        <div className="text-yellow-500" title={`Recordatorio: ${new Date(patient.reminder.datetime).toLocaleString('es-ES')}`}>
+                            <BellIcon />
+                        </div>
+                     )}
                      <button
                         onClick={(e) => {
                             e.stopPropagation();

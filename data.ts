@@ -1,3 +1,4 @@
+
 import type { Patient, Message, Visit } from './types';
 
 export const mockPatients: Patient[] = [
@@ -40,6 +41,10 @@ export const mockPatients: Patient[] = [
         avatarUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Morgan_Freeman_2012.jpg/800px-Morgan_Freeman_2012.jpg',
         lastMessage: 'Sigo con la molestia al caminar.',
         lastMessageTimestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        reminder: {
+            datetime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(), // Tomorrow
+            message: 'Enviar foto del pie para control semanal.'
+        },
         details: {
             age: 68,
             condition: 'Úlcera de pie diabético',
